@@ -10,7 +10,7 @@ db.books.distinct("categories",{}).map(c=>
     }    
 )
 
-//3
+//4
 db.books.aggregate([
 {$match:{status:"PUBLISH"}},
 {$project:{status:false}},
