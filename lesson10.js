@@ -1,0 +1,85 @@
+db.getCollection("books").find({})
+//3
+db.books.aggregate([
+{$match:{title:/^A/}},
+{$sort:{publishedDate:-1}},
+{$project:{title:1,pageCount:1}},
+])
+//5
+db.books.aggregate([
+{$match:{pageCount:{$gt:0}}},
+{$project:{longDescription:0,shortDescription:0}},
+{$skip:10},
+{$limit:100},
+{$out:'New5'}
+])
+//6
+db.books.aggregate([
+{$group:{
+    _id:'$pageCount',
+    count:{$sum:1},
+}},
+{$sort:{_id:1}},
+{$set:{'pageCount':'$_id'}},
+{$project:{_id:0}}
+])
+//7
+db.books.aggregate([
+{
+   $group:{
+       _id:'$status',
+       avgPages:{$avg:'$pageCount'},
+       maxPages:{$max:'$pageCount'},
+       minPages:{$min:'$pageCount'},
+       firstPages:{$first:'$title'},
+       lastPages:{$last:'$title'}
+   }
+}
+])
+//8
+db.books.aggregate([
+{
+    $group:{
+        _id:'$status',
+        listNames:{$push:'$title'},
+        listNames2:{$addToSet:'$title'}
+    }
+}
+])
+//9
+db.books.aggregate([           
+  
+    {$unwind:'$authors'},
+    {$group:{
+       _id:'$authors',
+       listNames:{$addToSet:'$title'},
+       count:{$sum:1}
+    }},
+    {$sort:{count:-1}}
+
+])
+//10
+db.books.aggregate([
+
+    {$unwind:'$categories'},
+    {$group:{
+        _id:'$categories',
+        count:{$sum:1},
+    }},
+    {$sort:{count:-1}}
+   
+])
+//11
+db.books.aggregate([
+
+        {$unwind:'$authors'},
+        {$match:{authors:{$not:{$eq:''}}}},
+        {$group:{
+            _id:'$authors'
+        }},
+        {$set:{name:'$_id'}},
+        {$project:{_id:0}},
+        {$sort:{name:1}},
+        {$out:'authors'}
+    
+])
